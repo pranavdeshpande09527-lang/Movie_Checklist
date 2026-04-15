@@ -16,7 +16,8 @@ import {
 } from '../utils/omdb'
 import { useMovieStore } from '../store/movieStore'
 
-const TRENDING_QUERIES = ['Inception', 'Interstellar', 'The Godfather', 'Parasite', 'Oppenheimer', 'Dune', 'Avatar', 'Top Gun']
+const TRENDING_GLOBAL = ['Inception', 'Interstellar', 'The Godfather', 'Parasite', 'Oppenheimer', 'Dune', 'Avatar', 'Top Gun']
+const TRENDING_INDIAN = ['3 Idiots', 'Dangal', 'Baahubali', 'RRR', 'Drishyam', 'Andhadhun', 'Article 370', 'Pushpa', 'KGF Chapter 2', 'Tumbbad', 'Vikram', 'Mirzapur']
 const MAX_RECENT = 6
 const RECENT_KEY = 'cinetrack-recent-searches'
 
@@ -182,14 +183,14 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Trending */}
+          {/* Trending — Global */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={13} className="text-accent" />
-              <span className="text-muted text-[11px] font-semibold uppercase tracking-wider">Trending</span>
+              <span className="text-muted text-[11px] font-semibold uppercase tracking-wider">Trending Worldwide</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {TRENDING_QUERIES.map((s) => (
+              {TRENDING_GLOBAL.map((s) => (
                 <button key={s} onClick={() => setQuery(s)}
                   className="text-xs bg-surface border border-accent/20 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-accent/50 transition-colors">
                   🔥 {s}
@@ -197,6 +198,23 @@ export default function SearchPage() {
               ))}
             </div>
           </div>
+
+          {/* Trending — Indian */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-base leading-none">🇮🇳</span>
+              <span className="text-muted text-[11px] font-semibold uppercase tracking-wider">Indian Hits</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {TRENDING_INDIAN.map((s) => (
+                <button key={s} onClick={() => setQuery(s)}
+                  className="text-xs bg-surface border border-orange-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-orange-400/60 transition-colors">
+                  🎬 {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
 
           {/* Hero prompt */}
           <div className="flex flex-col items-center text-center py-8 gap-3">

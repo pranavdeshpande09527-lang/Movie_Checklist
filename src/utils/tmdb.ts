@@ -186,4 +186,41 @@ export const FALLBACK_MOVIES: TMDBMovie[] = [
     overview: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.',
     vote_average: 8.1, genre_ids: [18, 36], popularity: 135,
   },
+  // 🇮🇳 Indian Hits
+  {
+    id: 96251, title: '3 Idiots', release_date: '2009-12-25',
+    poster_path: '/66A9MqQOCMqFkKy8mdXB1IZhsKG.jpg', backdrop_path: '/dGbz4LNVGMH04Mw6tCxJMHcBJr.jpg',
+    overview: 'Two friends search for their lost companion who inspired them to think differently about the purpose of education.',
+    vote_average: 8.4, genre_ids: [35, 18], popularity: 98,
+  },
+  {
+    id: 359413, title: 'Dangal', release_date: '2016-12-23',
+    poster_path: '/aZWEVFxD41hTMV4fgLjvzUqMOC5.jpg', backdrop_path: '/l1YoSdE7U6nWGFTB4fB8YRHQNKX.jpg',
+    overview: 'Former wrestler Mahavir Singh Phogat trains his daughters to become world-class wrestlers against all odds.',
+    vote_average: 8.4, genre_ids: [18, 99], popularity: 92,
+  },
+  {
+    id: 310131, title: 'Baahubali: The Beginning', release_date: '2015-07-10',
+    poster_path: '/f4tDa22nVl3AJxMM0cLCOvdTMDY.jpg', backdrop_path: '/4iOmeUHnQGpVNzZ0LlJfSTTZEiD.jpg',
+    overview: 'An epic tale of two brothers separated at birth, leading to a legendary power struggle for a kingdom.',
+    vote_average: 8.0, genre_ids: [28, 12, 18], popularity: 110,
+  },
+  {
+    id: 759544, title: 'RRR', release_date: '2022-03-24',
+    poster_path: '/nEufeZlyAOLqO2brrs0yeF1lgXO.jpg', backdrop_path: '/7m3DXBajMidKpvGbhA7X8WY1gGP.jpg',
+    overview: 'A fictional story about two legendary Indian revolutionaries and their fight against British colonialism.',
+    vote_average: 7.9, genre_ids: [28, 18], popularity: 115,
+  },
+  {
+    id: 580041, title: 'Andhadhun', release_date: '2018-10-05',
+    poster_path: '/6e1Vn7dNlKVhc0RYGcTYpvJd9Ct.jpg', backdrop_path: '/aItBrX4TuCJIWNvFt5BFp6amh6x.jpg',
+    overview: 'A series of unexpected events unfold after a blind pianist unknowingly becomes a witness to a murder.',
+    vote_average: 8.2, genre_ids: [53, 80, 35], popularity: 88,
+  },
+  {
+    id: 532004, title: 'Tumbbad', release_date: '2018-10-12',
+    poster_path: '/fBUe4FkwS7HJrXLpZ8C2NpRLTe6.jpg', backdrop_path: '/aVLeMNfnxMDT2HkUbWdMDzNVhRy.jpg',
+    overview: 'A cautionary tale set in Maharashtra about the greed of man and a forgotten god who hoards all the food.',
+    vote_average: 8.0, genre_ids: [27, 14, 53], popularity: 80,
+  },
 ]
