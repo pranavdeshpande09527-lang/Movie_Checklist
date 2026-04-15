@@ -1,11 +1,11 @@
 /**
- * SearchPage — powered by OMDb API
- * New v2: Recent search cache, trending chips, result caching
+ * SearchPage.tsx — Live OMDb search with dynamic TMDB-powered discovery sections
+ * All chip suggestions are fetched from the TMDB API — zero hardcoded movie titles.
  */
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
-import { Search, Plus, Loader2, X, Film, CheckCircle, Clock, TrendingUp, Sparkles } from 'lucide-react'
+import { Search, Plus, Loader2, X, Film, CheckCircle, Clock, TrendingUp, Sparkles, Globe } from 'lucide-react'
 import {
   searchMoviesOMDb,
   getMovieDetailOMDb,
@@ -14,14 +14,14 @@ import {
   parseOMDbRating,
   type OMDbSearchResult,
 } from '../utils/omdb'
+import {
+  getTrending,
+  getIndianMovies,
+  discoverHiddenGems,
+  type TMDBMovie,
+} from '../utils/tmdb'
 import { useMovieStore } from '../store/movieStore'
 
-const TRENDING_GLOBAL = ['Inception', 'Interstellar', 'The Godfather', 'Parasite', 'Oppenheimer', 'Dune', 'Avatar', 'Top Gun']
-const TRENDING_INDIAN = ['3 Idiots', 'Dangal', 'Baahubali', 'RRR', 'Drishyam', 'Andhadhun', 'Article 370', 'Pushpa', 'KGF Chapter 2', 'Tumbbad', 'Vikram', 'Mirzapur']
-
-// Underrated / Hidden Gems
-const HIDDEN_GEMS_GLOBAL = ['Prisoners', 'Moon', 'Coherence', 'A Ghost Story', 'Enemy', 'Upgrade', 'Predestination', 'Sound of Metal', 'The Lighthouse', 'Annihilation', 'Timecrimes', 'Whiplash']
-const HIDDEN_GEMS_INDIAN = ['Tumbbad', 'Newton', 'Court', 'Masaan', 'Talvar', 'Ship of Theseus', 'Kapoor and Sons', 'Lootera', 'Raman Raghav 2.0', 'Haider', 'Trapped', 'Ugly']
 const MAX_RECENT = 6
 const RECENT_KEY = 'cinetrack-recent-searches'
 
@@ -44,6 +44,17 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 26 } },
 }
 
+/* ── Discovery chip sections ── */
+interface DiscoverSection {
+  id: string
+  label: string
+  subtitle: string
+  emoji: string
+  chipClass: string
+  movies: TMDBMovie[]
+  loading: boolean
+}
+
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<OMDbSearchResult[]>([])
@@ -54,9 +65,41 @@ export default function SearchPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Discovery sections state
+  const [sections, setSections] = useState<DiscoverSection[]>([
+    { id: 'trending', label: 'Trending Worldwide', subtitle: '', emoji: '🔥', chipClass: 'border-accent/20 hover:border-accent/50', movies: [], loading: true },
+    { id: 'indian', label: 'Indian Hits', subtitle: '', emoji: '🎬', chipClass: 'border-orange-500/25 hover:border-orange-400/60', movies: [], loading: true },
+    { id: 'gems_global', label: 'Hidden Gems', subtitle: 'Critically loved, criminally underrated 🌍', emoji: '💎', chipClass: 'border-purple-500/25 hover:border-purple-400/60', movies: [], loading: true },
+    { id: 'gems_indian', label: 'Indian Hidden Gems', subtitle: "Masterpieces most people haven't seen 🇮🇳", emoji: '✨', chipClass: 'border-amber-500/25 hover:border-amber-400/60', movies: [], loading: true },
+  ])
+
   const { movies, addMovie } = useMovieStore()
   const addedImdbIds = new Set(movies.map((m) => m.imdbId).filter(Boolean))
 
+  // Fetch all discovery sections on mount
+  useEffect(() => {
+    const updateSection = (id: string, patch: Partial<DiscoverSection>) => {
+      setSections((prev) => prev.map((s) => s.id === id ? { ...s, ...patch } : s))
+    }
+
+    getTrending('week')
+      .then((data) => updateSection('trending', { movies: data.slice(0, 12), loading: false }))
+      .catch(() => updateSection('trending', { loading: false }))
+
+    getIndianMovies()
+      .then((data) => updateSection('indian', { movies: data.slice(0, 12), loading: false }))
+      .catch(() => updateSection('indian', { loading: false }))
+
+    discoverHiddenGems()
+      .then((data) => updateSection('gems_global', { movies: data.slice(0, 12), loading: false }))
+      .catch(() => updateSection('gems_global', { loading: false }))
+
+    discoverHiddenGems('hi')
+      .then((data) => updateSection('gems_indian', { movies: data.slice(0, 12), loading: false }))
+      .catch(() => updateSection('gems_indian', { loading: false }))
+  }, [])
+
+  // Debounced OMDb search
   useEffect(() => {
     if (!query.trim()) { setResults([]); setError(''); return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -159,9 +202,9 @@ export default function SearchPage() {
         )}
       </AnimatePresence>
 
-      {/* Empty / Discovery state */}
+      {/* Discovery state — shown when no active search */}
       {!query && results.length === 0 && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-6 py-4">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-6 py-2">
 
           {/* Recent Searches */}
           {recentSearches.length > 0 && (
@@ -187,72 +230,51 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Trending — Global */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp size={13} className="text-accent" />
-              <span className="text-muted text-[11px] font-semibold uppercase tracking-wider">Trending Worldwide</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {TRENDING_GLOBAL.map((s) => (
-                <button key={s} onClick={() => setQuery(s)}
-                  className="text-xs bg-surface border border-accent/20 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-accent/50 transition-colors">
-                  🔥 {s}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Dynamic discovery sections */}
+          {sections.map((section) => (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-1">
+                {section.id === 'trending' ? (
+                  <TrendingUp size={13} className="text-accent" />
+                ) : section.id === 'indian' ? (
+                  <Globe size={13} className="text-orange-400" />
+                ) : section.id === 'gems_global' ? (
+                  <Sparkles size={13} className="text-purple-400" />
+                ) : (
+                  <Sparkles size={13} className="text-amber-400" />
+                )}
+                <span className={`text-[11px] font-semibold uppercase tracking-wider ${
+                  section.id === 'trending' ? 'text-muted' :
+                  section.id === 'indian' ? 'text-orange-400' :
+                  section.id === 'gems_global' ? 'text-purple-400' : 'text-amber-400'
+                }`}>
+                  {section.label}
+                </span>
+              </div>
+              {section.subtitle && (
+                <p className="text-muted text-[10px] mb-3">{section.subtitle}</p>
+              )}
 
-          {/* Trending — Indian */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-base leading-none">🇮🇳</span>
-              <span className="text-muted text-[11px] font-semibold uppercase tracking-wider">Indian Hits</span>
+              {section.loading ? (
+                <div className="flex gap-2 flex-wrap">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-7 w-24 rounded-full bg-surface animate-pulse" />
+                  ))}
+                </div>
+              ) : section.movies.length === 0 ? (
+                <p className="text-muted text-xs">Could not load — check your connection.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {section.movies.map((m) => (
+                    <button key={m.id} onClick={() => setQuery(m.title)}
+                      className={`text-xs bg-surface border ${section.chipClass} px-3 py-1.5 rounded-full text-white/70 hover:text-white transition-colors`}>
+                      {section.emoji} {m.title}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {TRENDING_INDIAN.map((s) => (
-                <button key={s} onClick={() => setQuery(s)}
-                  className="text-xs bg-surface border border-orange-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-orange-400/60 transition-colors">
-                  🎬 {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-
-          {/* Hidden Gems — Global */}
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={13} className="text-purple-400" />
-              <span className="text-purple-400 text-[11px] font-semibold uppercase tracking-wider">Hidden Gems</span>
-            </div>
-            <p className="text-muted text-[10px] mb-3">Critically loved, criminally underrated 🌍</p>
-            <div className="flex flex-wrap gap-2">
-              {HIDDEN_GEMS_GLOBAL.map((s) => (
-                <button key={s} onClick={() => setQuery(s)}
-                  className="text-xs bg-surface border border-purple-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-purple-400/60 transition-colors">
-                  💎 {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Hidden Gems — Indian */}
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={13} className="text-amber-400" />
-              <span className="text-amber-400 text-[11px] font-semibold uppercase tracking-wider">Indian Hidden Gems</span>
-            </div>
-            <p className="text-muted text-[10px] mb-3">Masterpieces most people haven't seen 🇮🇳</p>
-            <div className="flex flex-wrap gap-2">
-              {HIDDEN_GEMS_INDIAN.map((s) => (
-                <button key={s} onClick={() => setQuery(s)}
-                  className="text-xs bg-surface border border-amber-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-amber-400/60 transition-colors">
-                  ✨ {s}
-                </button>
-              ))}
-            </div>
-          </div>
+          ))}
 
           {/* Hero prompt */}
           <div className="flex flex-col items-center text-center py-8 gap-3">

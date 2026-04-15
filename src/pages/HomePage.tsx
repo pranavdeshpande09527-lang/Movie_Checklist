@@ -13,35 +13,10 @@ import MovieCard from '../components/MovieCard'
 import MovieDetailDrawer from '../components/MovieDetailDrawer'
 import AddMovieModal from '../components/AddMovieModal'
 import BulkActionBar from '../components/BulkActionBar'
-import type { Movie } from '../store/movieStore'
-import { getDailyPick, getRecommendations, filterByMoodGenres } from '../utils/recommendations'
 
-const CURATED_FALLBACK: Omit<Movie, 'id' | 'addedAt'>[] = [
-  // International Classics
-  { title: 'Inception', year: '2010', genre: ['Sci-Fi', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg', tmdbRating: 8.8, userRating: 0, userNotes: '', overview: 'A thief who steals corporate secrets through dream-sharing.', status: 'watchlist', imdbId: 'tt1375666' },
-  { title: 'The Dark Knight', year: '2008', genre: ['Action', 'Crime'], poster: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg', tmdbRating: 9.0, userRating: 0, userNotes: '', overview: 'Batman faces The Joker in a battle for Gotham\'s soul.', status: 'watchlist', imdbId: 'tt0468569' },
-  { title: 'Interstellar', year: '2014', genre: ['Sci-Fi', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg', tmdbRating: 8.6, userRating: 0, userNotes: '', overview: 'Explorers travel through a wormhole in space to save humanity.', status: 'watchlist', imdbId: 'tt0816692' },
-  { title: 'Parasite', year: '2019', genre: ['Drama', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg', tmdbRating: 8.5, userRating: 0, userNotes: '', overview: 'A poor family schemes to become employed by a wealthy family.', status: 'watchlist', imdbId: 'tt6751668' },
-  { title: 'The Godfather', year: '1972', genre: ['Crime', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg', tmdbRating: 9.2, userRating: 0, userNotes: '', overview: 'The aging patriarch of an organized crime dynasty transfers control to his reluctant son.', status: 'watchlist', imdbId: 'tt0068646' },
-  { title: 'Pulp Fiction', year: '1994', genre: ['Crime', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg', tmdbRating: 8.9, userRating: 0, userNotes: '', overview: 'The lives of two mob hitmen, a boxer, a gangster and his wife intertwine.', status: 'watchlist', imdbId: 'tt0110912' },
-  // 🇮🇳 Indian Hits
-  { title: '3 Idiots', year: '2009', genre: ['Comedy', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BNTkyOGVjMGEtNmQzZi00NzFlLTlhOWQtODYyMDc2ZGJmYzFhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg', tmdbRating: 8.4, userRating: 0, userNotes: '', overview: 'Two friends search for their lost companion who inspired them to think differently.', status: 'watchlist', imdbId: 'tt1187043' },
-  { title: 'Dangal', year: '2016', genre: ['Drama', 'Biography', 'Sport'], poster: 'https://m.media-amazon.com/images/M/MV5BMjMxNjkwMTgwNl5BMl5BanBnXkFtZTgwMzAxNDc0MDI@._V1_SX300.jpg', tmdbRating: 8.4, userRating: 0, userNotes: '', overview: 'Former wrestler Mahavir Singh Phogat trains his daughters to become world-class wrestlers.', status: 'watchlist', imdbId: 'tt5074352' },
-  { title: 'Baahubali: The Beginning', year: '2015', genre: ['Action', 'Adventure', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BYWVlMjVkMjItZjM5Yi00Y2YwLWFlNzAtNTkzOWM2NDQyMGZlXkEyXkFqcGdeQXVyODIwMDI1NjM@._V1_SX300.jpg', tmdbRating: 8.0, userRating: 0, userNotes: '', overview: 'An epic tale of two brothers separated at birth leading to a legendary power struggle.', status: 'watchlist', imdbId: 'tt2631186' },
-  { title: 'RRR', year: '2022', genre: ['Action', 'Drama'], poster: 'https://m.media-amazon.com/images/M/MV5BOGEzYzcxYjAtYjU2Yi00ZWZjLTk3YzQtMzVmYTI3MGI1MDE1XkEyXkFqcGdeQXVyMTEzMTI1Mjk3._V1_SX300.jpg', tmdbRating: 7.9, userRating: 0, userNotes: '', overview: 'A fictional story about two legendary Indian revolutionaries and their journey away from home.', status: 'watchlist', imdbId: 'tt8178634' },
-  { title: 'Andhadhun', year: '2018', genre: ['Thriller', 'Crime', 'Comedy'], poster: 'https://m.media-amazon.com/images/M/MV5BZWZkZWRkNGMtNDg3Zi00MDM1LWJmNGItMjY0OWE2NjVmYmVlXkEyXkFqcGdeQXVyNDAzNDk0MTQ@._V1_SX300.jpg', tmdbRating: 8.2, userRating: 0, userNotes: '', overview: 'A series of events unfold after a blind pianist witnesses a murder.', status: 'watchlist', imdbId: 'tt8108198' },
-  { title: 'Tumbbad', year: '2018', genre: ['Horror', 'Fantasy', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BYmQ4ZDMzOGMtMzdiZC00ZGI5LWFjZmMtZWM5ZWQwZTAzODlhXkEyXkFqcGdeQXVyNDFzMDg1Mjc@._V1_SX300.jpg', tmdbRating: 8.0, userRating: 0, userNotes: '', overview: 'A story about a man who discovers a god that was forgotten by time and greed.', status: 'watchlist', imdbId: 'tt8239946' },
-  // 💎 Hidden Gems — Indian
-  { title: 'Masaan', year: '2015', genre: ['Drama', 'Romance'], poster: 'https://m.media-amazon.com/images/M/MV5BMTc3NTIyNjU4N15BMl5BanBnXkFtZTgwNzExNDE4NjE@._V1_SX300.jpg', tmdbRating: 8.2, userRating: 0, userNotes: '', overview: 'Four people struggle with ancient social customs and love along the banks of the Ganges.', status: 'watchlist', imdbId: 'tt4635372' },
-  { title: 'Newton', year: '2017', genre: ['Drama', 'Comedy'], poster: 'https://m.media-amazon.com/images/M/MV5BZWFiM2I5OWYtNDNmZi00MDJiLWJmNmQtN2M4YTRjMzY4OGQyXkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_SX300.jpg', tmdbRating: 7.5, userRating: 0, userNotes: '', overview: 'A young government clerk is assigned election duty in a conflict-zone jungle of Central India.', status: 'watchlist', imdbId: 'tt6538448' },
-  { title: 'Haider', year: '2014', genre: ['Drama', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BMjIwNTgzMDA0NF5BMl5BanBnXkFtZTgwMzUxMDA3MjE@._V1_SX300.jpg', tmdbRating: 8.1, userRating: 0, userNotes: '', overview: 'A young man returns to Kashmir after his father\'s disappearance to confront his uncle and uncover dark truths.', status: 'watchlist', imdbId: 'tt3708538' },
-  { title: 'Talvar', year: '2015', genre: ['Crime', 'Drama', 'Mystery'], poster: 'https://m.media-amazon.com/images/M/MV5BMTk0NTAyNDU4N15BMl5BanBnXkFtZTgwNjcxMTYxNjE@._V1_SX300.jpg', tmdbRating: 8.3, userRating: 0, userNotes: '', overview: 'The true story of a 2008 double murder case that shocked India, told from multiple perspectives.', status: 'watchlist', imdbId: 'tt4907596' },
-  // 💎 Hidden Gems — Global
-  { title: 'Prisoners', year: '2013', genre: ['Crime', 'Drama', 'Mystery'], poster: 'https://m.media-amazon.com/images/M/MV5BMTg0NTIzMjQ1NV5BMl5BanBnXkFtZTcwNDc3MzM5OQ@@._V1_SX300.jpg', tmdbRating: 8.1, userRating: 0, userNotes: '', overview: 'When two children go missing, a desperate father takes matters into his own hands.', status: 'watchlist', imdbId: 'tt1392214' },
-  { title: 'Coherence', year: '2013', genre: ['Sci-Fi', 'Mystery', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BMTQ1NTEyNjA3Nl5BMl5BanBnXkFtZTgwODg5NjA4MjE@._V1_SX300.jpg', tmdbRating: 7.2, userRating: 0, userNotes: '', overview: 'Strange things happen during a dinner party the night a comet passes overhead.', status: 'watchlist', imdbId: 'tt2866360' },
-  { title: 'Sound of Metal', year: '2019', genre: ['Drama', 'Music'], poster: 'https://m.media-amazon.com/images/M/MV5BOWUwODNjNWItYjA5Yy00MmQ5LTg0NTItZmViMWNmNzIwZTNlXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_SX300.jpg', tmdbRating: 7.8, userRating: 0, userNotes: '', overview: 'A drummer begins to lose his hearing and must find a new way to live.', status: 'watchlist', imdbId: 'tt5363618' },
-  { title: 'Upgrade', year: '2018', genre: ['Sci-Fi', 'Action', 'Thriller'], poster: 'https://m.media-amazon.com/images/M/MV5BOTA2MjQwNjExMV5BMl5BanBnXkFtZTgwNzExNTA5NjM@._V1_SX300.jpg', tmdbRating: 7.5, userRating: 0, userNotes: '', overview: 'A tech-implanted quadriplegic uses the AI in his system to seek revenge on those who paralysed him.', status: 'watchlist', imdbId: 'tt6499752' },
-]
+import { getDailyPick, getRecommendations, filterByMoodGenres } from '../utils/recommendations'
+import { getTrending, formatTMDBMovie } from '../utils/tmdb'
+
 
 /* ── Cinematic Mode Overlay ── */
 function CinematicMode({ movieId, onClose }: { movieId: string; onClose: () => void }) {
@@ -109,10 +84,10 @@ function CinematicMode({ movieId, onClose }: { movieId: string; onClose: () => v
 
 /* ── Main Page ── */
 export default function HomePage() {
-  const { movies, addMovie, getWatchlist } = useMovieStore()
+  const { movies, addMovie } = useMovieStore()
   const { activeMood, cinematicMovieId, setCinematicMovie, isBulkMode, toggleBulkMode } = useUIStore()
   const { streak } = useGamificationStore()
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
+  const [selectedMovie, setSelectedMovie] = useState<import('../store/movieStore').Movie | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
 
@@ -124,11 +99,14 @@ export default function HomePage() {
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline) }
   }, [])
 
-  // Add fallback movies if library is empty
-  const watchlist = getWatchlist()
+  // Seed library with live TMDB trending if it's the user's first launch
   useEffect(() => {
     if (movies.length === 0) {
-      CURATED_FALLBACK.forEach((m) => addMovie(m))
+      getTrending('week')
+        .then((list) => {
+          list.slice(0, 12).forEach((m) => addMovie(formatTMDBMovie(m)))
+        })
+        .catch(() => { /* offline — user can add movies manually */ })
     }
   }, [])
 
@@ -140,7 +118,7 @@ export default function HomePage() {
 
   // Mood-filtered watchlist
   const moodGenres = MOOD_GENRES[activeMood]
-  const filteredWatchlist = filterByMoodGenres(watchlist, moodGenres)
+  const filteredWatchlist = filterByMoodGenres(movies.filter(m => m.status === 'watchlist'), moodGenres)
 
   // Recently added
   const recentlyAdded = [...movies]

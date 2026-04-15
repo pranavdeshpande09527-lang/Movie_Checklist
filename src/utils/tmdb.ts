@@ -10,7 +10,7 @@
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
 
-// Public demo key - replace with your own from https://www.themoviedb.org/settings/api
+// Public demo key — replace with your own from https://www.themoviedb.org/settings/api
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY || '4f5f43495afcc67e9553f6a1f6a53db0'
 
 export interface TMDBMovie {
@@ -109,118 +109,49 @@ export function formatTMDBMovie(m: TMDBMovie) {
   }
 }
 
+/** Get movies popular in a specific region (e.g. 'IN' for India) */
+export async function getRegionalMovies(region = 'IN'): Promise<TMDBMovie[]> {
+  const url = `${TMDB_BASE}/movie/popular?api_key=${API_KEY}&region=${region}&language=en-US&page=1`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Failed to fetch regional movies')
+  const data = await res.json()
+  return data.results as TMDBMovie[]
+}
+
 /**
- * Curated fallback movies shown when TMDB API is unavailable.
- * Uses real TMDB IDs and poster paths that can load via image CDN separately.
+ * Discover Indian-language films
+ * Covers Hindi (hi), Tamil (ta), Telugu (te), Malayalam (ml), Kannada (kn)
  */
-export const FALLBACK_MOVIES: TMDBMovie[] = [
-  {
-    id: 550, title: 'Fight Club', release_date: '1999-10-15',
-    poster_path: '/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg', backdrop_path: '/rr7E0NoGKxvbkb89eR1GwfoYjpA.jpg',
-    overview: 'An insomniac office worker and a soap salesman build a global organization to help vent male aggression.',
-    vote_average: 8.4, genre_ids: [18, 53], popularity: 100,
-  },
-  {
-    id: 155, title: 'The Dark Knight', release_date: '2008-07-14',
-    poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg', backdrop_path: '/hkBaDkMWbLaf8B1lsWsKX7Ew3Xq.jpg',
-    overview: 'When the menace known as the Joker wreaks havoc on Gotham, Batman must confront inner demons.',
-    vote_average: 8.5, genre_ids: [28, 80, 18, 53], popularity: 120,
-  },
-  {
-    id: 13, title: 'Forrest Gump', release_date: '1994-06-23',
-    poster_path: '/saHP97rTPS5eLmrLQEcANmKrsFl.jpg', backdrop_path: '/qdIMHd4sEfJSckfVJfKQvisL02a.jpg',
-    overview: 'The presidencies of Kennedy and Johnson, through the perspective of a man with an IQ of 75.',
-    vote_average: 8.5, genre_ids: [35, 18, 10749], popularity: 110,
-  },
-  {
-    id: 278, title: 'The Shawshank Redemption', release_date: '1994-09-23',
-    poster_path: '/lyQBXzOQSuE59IsHyhrp0qIiPAz.jpg', backdrop_path: '/iNh3BivHyg5sQRPP1KOkzguEX0H.jpg',
-    overview: 'Two imprisoned men bond over a number of years, finding solace and eventual redemption.',
-    vote_average: 8.7, genre_ids: [18, 80], popularity: 115,
-  },
-  {
-    id: 238, title: 'The Godfather', release_date: '1972-03-14',
-    poster_path: '/3bhkrj58Vtu7enYsLeFJfT9bILB.jpg', backdrop_path: '/tmU7GeKVybMWFButWEGl2M4GeiP.jpg',
-    overview: 'The aging patriarch of an organized crime dynasty transfers control to his reluctant son.',
-    vote_average: 8.7, genre_ids: [18, 80], popularity: 105,
-  },
-  {
-    id: 680, title: 'Pulp Fiction', release_date: '1994-09-10',
-    poster_path: '/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg', backdrop_path: '/4cDFJr4HnXN5AdPw4AKrmLlMWdO.jpg',
-    overview: 'The lives of two mob hitmen, a boxer, and a pair of bandits intertwine in four tales of violence.',
-    vote_average: 8.5, genre_ids: [53, 80], popularity: 108,
-  },
-  {
-    id: 372058, title: 'Your Name', release_date: '2016-08-26',
-    poster_path: '/q719jXXEzOoYaps6babgKnONONX.jpg', backdrop_path: '/mMtUybQ6hL24FXo0F3Z4j2KG7kZ.jpg',
-    overview: 'Two strangers find themselves linked in a bizarre way when they discover they are swapping bodies.',
-    vote_average: 8.4, genre_ids: [16, 14, 10749], popularity: 95,
-  },
-  {
-    id: 27205, title: 'Inception', release_date: '2010-07-15',
-    poster_path: '/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', backdrop_path: '/s3TBrRGB1iav7gFOCNx3H31MoES.jpg',
-    overview: 'A thief who steals corporate secrets through dream-sharing is given a chance to have his past erased.',
-    vote_average: 8.4, genre_ids: [28, 878, 53], popularity: 125,
-  },
-  {
-    id: 82684, title: 'Interstellar', release_date: '2014-11-05',
-    poster_path: '/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', backdrop_path: '/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg',
-    overview: 'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
-    vote_average: 8.4, genre_ids: [12, 18, 878], popularity: 118,
-  },
-  {
-    id: 11, title: 'Star Wars', release_date: '1977-05-25',
-    poster_path: '/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg', backdrop_path: '/zqkmTXzjkAgXmEWLRsY4UpTWCeo.jpg',
-    overview: 'Luke Skywalker joins forces with a Jedi Knight and a roguish smuggler to save the galaxy.',
-    vote_average: 8.2, genre_ids: [12, 28, 14, 878], popularity: 98,
-  },
-  {
-    id: 346698, title: 'Barbie', release_date: '2023-07-19',
-    poster_path: '/iuFNMS8vlbm6oAiCDgMFzQUGT8V.jpg', backdrop_path: '/nHf61UzkfFno5X1ofIjWpbaksNq.jpg',
-    overview: 'Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbieland.',
-    vote_average: 7.1, genre_ids: [35, 12, 14], popularity: 130,
-  },
-  {
-    id: 872585, title: 'Oppenheimer', release_date: '2023-07-19',
-    poster_path: '/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', backdrop_path: '/rLb2cwF3Pazuxaj0sRXQ037tGI1.jpg',
-    overview: 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.',
-    vote_average: 8.1, genre_ids: [18, 36], popularity: 135,
-  },
-  // 🇮🇳 Indian Hits
-  {
-    id: 96251, title: '3 Idiots', release_date: '2009-12-25',
-    poster_path: '/66A9MqQOCMqFkKy8mdXB1IZhsKG.jpg', backdrop_path: '/dGbz4LNVGMH04Mw6tCxJMHcBJr.jpg',
-    overview: 'Two friends search for their lost companion who inspired them to think differently about the purpose of education.',
-    vote_average: 8.4, genre_ids: [35, 18], popularity: 98,
-  },
-  {
-    id: 359413, title: 'Dangal', release_date: '2016-12-23',
-    poster_path: '/aZWEVFxD41hTMV4fgLjvzUqMOC5.jpg', backdrop_path: '/l1YoSdE7U6nWGFTB4fB8YRHQNKX.jpg',
-    overview: 'Former wrestler Mahavir Singh Phogat trains his daughters to become world-class wrestlers against all odds.',
-    vote_average: 8.4, genre_ids: [18, 99], popularity: 92,
-  },
-  {
-    id: 310131, title: 'Baahubali: The Beginning', release_date: '2015-07-10',
-    poster_path: '/f4tDa22nVl3AJxMM0cLCOvdTMDY.jpg', backdrop_path: '/4iOmeUHnQGpVNzZ0LlJfSTTZEiD.jpg',
-    overview: 'An epic tale of two brothers separated at birth, leading to a legendary power struggle for a kingdom.',
-    vote_average: 8.0, genre_ids: [28, 12, 18], popularity: 110,
-  },
-  {
-    id: 759544, title: 'RRR', release_date: '2022-03-24',
-    poster_path: '/nEufeZlyAOLqO2brrs0yeF1lgXO.jpg', backdrop_path: '/7m3DXBajMidKpvGbhA7X8WY1gGP.jpg',
-    overview: 'A fictional story about two legendary Indian revolutionaries and their fight against British colonialism.',
-    vote_average: 7.9, genre_ids: [28, 18], popularity: 115,
-  },
-  {
-    id: 580041, title: 'Andhadhun', release_date: '2018-10-05',
-    poster_path: '/6e1Vn7dNlKVhc0RYGcTYpvJd9Ct.jpg', backdrop_path: '/aItBrX4TuCJIWNvFt5BFp6amh6x.jpg',
-    overview: 'A series of unexpected events unfold after a blind pianist unknowingly becomes a witness to a murder.',
-    vote_average: 8.2, genre_ids: [53, 80, 35], popularity: 88,
-  },
-  {
-    id: 532004, title: 'Tumbbad', release_date: '2018-10-12',
-    poster_path: '/fBUe4FkwS7HJrXLpZ8C2NpRLTe6.jpg', backdrop_path: '/aVLeMNfnxMDT2HkUbWdMDzNVhRy.jpg',
-    overview: 'A cautionary tale set in Maharashtra about the greed of man and a forgotten god who hoards all the food.',
-    vote_average: 8.0, genre_ids: [27, 14, 53], popularity: 80,
-  },
-]
+export async function getIndianMovies(): Promise<TMDBMovie[]> {
+  const res = await fetch(
+    `${TMDB_BASE}/discover/movie?api_key=${API_KEY}` +
+    `&with_original_language=hi%7Cta%7Cte%7Cml%7Ckn` +
+    `&sort_by=popularity.desc&vote_count.gte=200&page=1`
+  )
+  if (!res.ok) throw new Error('Failed to fetch Indian movies')
+  const data = await res.json()
+  return data.results as TMDBMovie[]
+}
+
+/**
+ * Discover "hidden gem" movies — well-rated but not mainstream blockbusters.
+ * Optionally filtered by original language (e.g. "hi" for Hindi).
+ */
+export async function discoverHiddenGems(language?: string): Promise<TMDBMovie[]> {
+  const langParam = language ? `&with_original_language=${language}` : ''
+  const res = await fetch(
+    `${TMDB_BASE}/discover/movie?api_key=${API_KEY}` +
+    `&sort_by=vote_average.desc` +
+    `&vote_count.gte=500` +
+    `&vote_average.gte=7.2` +
+    `&vote_average.lte=8.4` +
+    `&without_genres=99,10770` + // exclude documentaries & TV movies
+    langParam +
+    `&page=1`
+  )
+  if (!res.ok) throw new Error('Failed to fetch hidden gems')
+  const data = await res.json()
+  // Sort by lowest popularity to surface lesser-known films
+  const sorted = (data.results as TMDBMovie[]).sort((a, b) => a.popularity - b.popularity)
+  return sorted.slice(0, 20)
+}
