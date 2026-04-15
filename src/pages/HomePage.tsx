@@ -15,7 +15,7 @@ import AddMovieModal from '../components/AddMovieModal'
 import BulkActionBar from '../components/BulkActionBar'
 
 import { getDailyPick, getRecommendations, filterByMoodGenres } from '../utils/recommendations'
-import { discoverByQuery, isGoodMovie, getMovieDetailOMDb, getOMDbPoster, parseOMDbGenres, parseOMDbRating } from '../utils/omdb'
+import { getMovieDetailOMDb, getOMDbPoster, parseOMDbGenres, parseOMDbRating } from '../utils/omdb'
 
 
 /* ── Cinematic Mode Overlay ── */
@@ -113,35 +113,33 @@ export default function HomePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Seed library with live OMDb data on first launch
+  // Seed library on first launch using exact IMDb IDs — guarantees the right movie every time
+  // Movie metadata (title, poster, plot, rating) is fetched live from OMDb API — nothing is hardcoded
   useEffect(() => {
     if (movies.length !== 0) return
-    // Specific popular titles — OMDb returns exact match first, avoiding documentary noise
-    const SEED_QUERIES = ['Inception', 'Interstellar', 'Dangal', '3 Idiots', 'Parasite 2019', 'Whiplash']
-    const JUNK_GENRES = ['documentary', 'short', 'talk-show', 'news', 'reality-tv']
-    Promise.all(SEED_QUERIES.map((q) => discoverByQuery(q).catch(() => [])))
-      .then(async (batches) => {
-        const seen = new Set<string>()
-        const unique = batches.flat().filter((m) => {
-          if (seen.has(m.imdbID) || !isGoodMovie(m)) return false
-          seen.add(m.imdbID); return true
-        }).slice(0, 12)
-        for (const m of unique) {
-          const detail = await getMovieDetailOMDb(m.imdbID).catch(() => null)
-          if (!detail) continue
-          // Genre-level filter: skip if OMDb tags it as documentary or short
-          const genreLower = (detail.Genre ?? '').toLowerCase()
-          if (JUNK_GENRES.some((g) => genreLower.includes(g))) continue
-          addMovie({
-            imdbId: detail.imdbID, title: detail.Title, year: detail.Year?.slice(0, 4) ?? '',
-            poster: getOMDbPoster(detail.Poster), genre: parseOMDbGenres(detail.Genre),
-            overview: detail.Plot !== 'N/A' ? detail.Plot : '',
-            tmdbRating: parseOMDbRating(detail.imdbRating),
-            userRating: 0, userNotes: '', status: 'watchlist',
-          })
-        }
-      })
-      .catch(() => { /* offline — user can add movies manually */ })
+    const SEED_IDS = [
+      'tt1375666', // Inception (2010)
+      'tt0816692', // Interstellar (2014)
+      'tt5074352', // Dangal (2016)
+      'tt1187043', // 3 Idiots (2009)
+      'tt6751668', // Parasite (2019)
+      'tt2582802', // Whiplash (2014)
+      'tt2380307', // Coco (2017)
+      'tt1345836', // The Dark Knight Rises (2012)
+    ]
+    ;(async () => {
+      for (const id of SEED_IDS) {
+        const detail = await getMovieDetailOMDb(id).catch(() => null)
+        if (!detail) continue
+        addMovie({
+          imdbId: detail.imdbID, title: detail.Title, year: detail.Year?.slice(0, 4) ?? '',
+          poster: getOMDbPoster(detail.Poster), genre: parseOMDbGenres(detail.Genre),
+          overview: detail.Plot !== 'N/A' ? detail.Plot : '',
+          tmdbRating: parseOMDbRating(detail.imdbRating),
+          userRating: 0, userNotes: '', status: 'watchlist',
+        })
+      }
+    })().catch(() => { /* offline — user can add movies manually */ })
   }, [])
 
   // Smart Daily Pick
