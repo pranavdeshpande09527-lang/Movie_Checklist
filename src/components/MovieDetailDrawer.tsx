@@ -23,34 +23,74 @@ const RATING_LABELS = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Amazing']
 const PRESET_TAGS = ['Weekend', 'With Friends', 'Rewatch', 'Classic', 'Comfort Movie', 'Tearjerker', 'Hidden Gem']
 
 function TrailerEmbed({ title, year }: { imdbId?: string; title: string; year: string }) {
-  const [loaded, setLoaded] = useState(false)
   const query = encodeURIComponent(`${title} ${year} official trailer`)
-  // Use YouTube nocookie embed search — no API key needed
-  const src = `https://www.youtube-nocookie.com/embed?listType=search&list=${query}&autoplay=0`
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${query}`
+  const youtubeEmbedSearch = `https://www.youtube.com/embed?listType=search&list=${query}`
 
-  return (
-    <div className="rounded-2xl overflow-hidden bg-surface-2 mb-5" style={{ aspectRatio: '16/9' }}>
-      {!loaded && (
+  // Attempt to embed first result via YouTube's deprecated search embed.
+  // If YouTube blocks it (common), fall back to a beautiful "Watch on YouTube" button.
+  const [embedFailed, setEmbedFailed] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+
+  if (!loaded) {
+    return (
+      <div className="rounded-2xl overflow-hidden bg-surface-2 mb-5" style={{ aspectRatio: '16/9' }}>
         <button
           onClick={() => setLoaded(true)}
-          className="w-full h-full flex flex-col items-center justify-center gap-2 group"
+          className="w-full h-full flex flex-col items-center justify-center gap-3 group"
         >
-          <div className="w-14 h-14 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center group-active:scale-90 transition-transform">
-            <Play size={24} className="text-accent ml-1" />
+          <div className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500/40 flex items-center justify-center group-active:scale-90 transition-transform">
+            <Play size={28} className="text-red-400 ml-1.5" fill="currentColor" />
           </div>
-          <span className="text-muted text-xs">Tap to load trailer</span>
+          <div className="text-center">
+            <p className="text-white text-sm font-bold">{title}</p>
+            <p className="text-muted text-xs mt-0.5">Tap to load trailer</p>
+          </div>
         </button>
-      )}
-      {loaded && (
-        <iframe
-          src={src}
-          title={`${title} trailer`}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-        />
-      )}
+      </div>
+    )
+  }
+
+  if (embedFailed) {
+    // Fallback: YouTube search button (always works, no API needed)
+    return (
+      <a
+        href={youtubeSearchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-4 p-4 rounded-2xl mb-5 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-colors"
+      >
+        <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
+          <Play size={20} className="text-white ml-0.5" fill="white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-sm">Watch Trailer on YouTube</p>
+          <p className="text-muted text-xs mt-0.5 truncate">{title} {year} official trailer</p>
+        </div>
+        <ExternalLink size={16} className="text-muted flex-shrink-0" />
+      </a>
+    )
+  }
+
+  return (
+    <div className="rounded-2xl overflow-hidden bg-black mb-5" style={{ aspectRatio: '16/9' }}>
+      <iframe
+        src={youtubeEmbedSearch}
+        title={`${title} trailer`}
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        loading="lazy"
+        onError={() => setEmbedFailed(true)}
+        // If embed loads but shows "unavailable", the fallback button below handles it
+      />
+      {/* Fallback link below the embed in case it shows "unavailable" */}
+      <div className="mt-2 px-1">
+        <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer"
+          className="text-red-400 text-xs underline flex items-center gap-1">
+          <ExternalLink size={11} /> Open in YouTube instead
+        </a>
+      </div>
     </div>
   )
 }
