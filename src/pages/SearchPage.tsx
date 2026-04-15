@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
-import { Search, Plus, Loader2, X, Film, CheckCircle, Clock, TrendingUp } from 'lucide-react'
+import { Search, Plus, Loader2, X, Film, CheckCircle, Clock, TrendingUp, Sparkles } from 'lucide-react'
 import {
   searchMoviesOMDb,
   getMovieDetailOMDb,
@@ -18,6 +18,10 @@ import { useMovieStore } from '../store/movieStore'
 
 const TRENDING_GLOBAL = ['Inception', 'Interstellar', 'The Godfather', 'Parasite', 'Oppenheimer', 'Dune', 'Avatar', 'Top Gun']
 const TRENDING_INDIAN = ['3 Idiots', 'Dangal', 'Baahubali', 'RRR', 'Drishyam', 'Andhadhun', 'Article 370', 'Pushpa', 'KGF Chapter 2', 'Tumbbad', 'Vikram', 'Mirzapur']
+
+// Underrated / Hidden Gems
+const HIDDEN_GEMS_GLOBAL = ['Prisoners', 'Moon', 'Coherence', 'A Ghost Story', 'Enemy', 'Upgrade', 'Predestination', 'Sound of Metal', 'The Lighthouse', 'Annihilation', 'Timecrimes', 'Whiplash']
+const HIDDEN_GEMS_INDIAN = ['Tumbbad', 'Newton', 'Court', 'Masaan', 'Talvar', 'Ship of Theseus', 'Kapoor and Sons', 'Lootera', 'Raman Raghav 2.0', 'Haider', 'Trapped', 'Ugly']
 const MAX_RECENT = 6
 const RECENT_KEY = 'cinetrack-recent-searches'
 
@@ -215,6 +219,40 @@ export default function SearchPage() {
             </div>
           </div>
 
+
+          {/* Hidden Gems — Global */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={13} className="text-purple-400" />
+              <span className="text-purple-400 text-[11px] font-semibold uppercase tracking-wider">Hidden Gems</span>
+            </div>
+            <p className="text-muted text-[10px] mb-3">Critically loved, criminally underrated 🌍</p>
+            <div className="flex flex-wrap gap-2">
+              {HIDDEN_GEMS_GLOBAL.map((s) => (
+                <button key={s} onClick={() => setQuery(s)}
+                  className="text-xs bg-surface border border-purple-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-purple-400/60 transition-colors">
+                  💎 {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Hidden Gems — Indian */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={13} className="text-amber-400" />
+              <span className="text-amber-400 text-[11px] font-semibold uppercase tracking-wider">Indian Hidden Gems</span>
+            </div>
+            <p className="text-muted text-[10px] mb-3">Masterpieces most people haven't seen 🇮🇳</p>
+            <div className="flex flex-wrap gap-2">
+              {HIDDEN_GEMS_INDIAN.map((s) => (
+                <button key={s} onClick={() => setQuery(s)}
+                  className="text-xs bg-surface border border-amber-500/25 px-3 py-1.5 rounded-full text-white/70 hover:text-white hover:border-amber-400/60 transition-colors">
+                  ✨ {s}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Hero prompt */}
           <div className="flex flex-col items-center text-center py-8 gap-3">
