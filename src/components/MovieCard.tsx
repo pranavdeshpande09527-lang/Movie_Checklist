@@ -158,7 +158,6 @@ export default function MovieCard({ movie, onClick }: MovieCardProps) {
               <img src={movie.poster} alt={movie.title}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
                 onError={() => setImgError(true)}
                 loading="lazy" />
             ) : (

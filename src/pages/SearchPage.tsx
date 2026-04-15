@@ -59,8 +59,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     id: 'trending',
     label: 'Trending Worldwide',
     emoji: '🔥',
-    // Reliable franchise/director terms — OMDb returns actual films, not shorts or compilations
-    queries: ['Oppenheimer', 'Dune', 'Avatar', 'Top Gun', 'John Wick'],
+    // Specific blockbuster titles — OMDb returns the exact film as first result, no documentary noise
+    queries: ['Inception', 'Interstellar', 'Oppenheimer', 'Dune Part Two', 'Top Gun Maverick', 'John Wick'],
     chipClass: 'border-accent/20 hover:border-accent/50',
     iconColor: 'text-accent',
   },
@@ -69,8 +69,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     label: 'Indian Hits',
     emoji: '🎦',
     subtitle: 'Bollywood & regional cinema',
-    // Actor/director names — OMDb reliably returns their famous films
-    queries: ['Aamir Khan', 'Rajkumar Hirani', 'SS Rajamouli', 'Farhan Akhtar'],
+    // Specific Indian movie titles — searched by title, data fully dynamic from OMDb
+    queries: ['Dangal', '3 Idiots', 'RRR 2022', 'KGF Chapter 2', 'Pathaan', 'Bajrangi Bhaijaan'],
     chipClass: 'border-orange-500/25 hover:border-orange-400/60',
     iconColor: 'text-orange-400',
   },
@@ -79,8 +79,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     label: 'Hidden Gems',
     emoji: '💎',
     subtitle: 'Critically loved, criminally underrated 🌍',
-    // Director names known for critically-loved niche films
-    queries: ['Denis Villeneuve', 'David Fincher', 'Darren Aronofsky'],
+    // International acclaimed films
+    queries: ['Parasite 2019', 'Whiplash', 'Prisoners 2013', 'Arrival 2016', 'Oldboy 2003'],
     chipClass: 'border-purple-500/25 hover:border-purple-400/60',
     iconColor: 'text-purple-400',
   },
@@ -89,8 +89,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     label: 'Indian Hidden Gems',
     emoji: '✨',
     subtitle: "Masterpieces most people haven't seen 🇮🇳",
-    // Directors of acclaimed Indian art cinema
-    queries: ['Anurag Kashyap', 'Vishal Bhardwaj', 'Dibakar Banerjee'],
+    // Acclaimed Indian art cinema titles
+    queries: ['Gangs of Wasseypur', 'Andhadhun', 'Masaan', 'Tumbbad', 'Article 15'],
     chipClass: 'border-amber-500/25 hover:border-amber-400/60',
     iconColor: 'text-amber-400',
   },
@@ -348,8 +348,9 @@ function SearchResultCard({ result, isAdded, isAdding, onAdd }: CardProps) {
       <div className="flex-shrink-0 w-[60px] h-[90px] rounded-xl overflow-hidden bg-surface-2">
         {poster && !imgError ? (
           <img src={poster} alt={result.Title} className="w-full h-full object-cover"
-            referrerPolicy="no-referrer" crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
             onError={() => setImgError(true)} loading="lazy" />
+
         ) : (
           <div className="poster-placeholder w-full h-full"><Film size={18} className="text-muted" /></div>
         )}

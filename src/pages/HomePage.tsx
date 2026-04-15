@@ -116,8 +116,9 @@ export default function HomePage() {
   // Seed library with live OMDb data on first launch
   useEffect(() => {
     if (movies.length !== 0) return
-    // Director/franchise names reliably return real popular films (unlike genre+year queries)
-    const SEED_QUERIES = ['Christopher Nolan', 'Steven Spielberg', 'Aamir Khan', 'Rajkumar Hirani']
+    // Specific popular titles — OMDb returns exact match first, avoiding documentary noise
+    const SEED_QUERIES = ['Inception', 'Interstellar', 'Dangal', '3 Idiots', 'Parasite 2019', 'Whiplash']
+    const JUNK_GENRES = ['documentary', 'short', 'talk-show', 'news', 'reality-tv']
     Promise.all(SEED_QUERIES.map((q) => discoverByQuery(q).catch(() => [])))
       .then(async (batches) => {
         const seen = new Set<string>()
@@ -127,21 +128,17 @@ export default function HomePage() {
         }).slice(0, 12)
         for (const m of unique) {
           const detail = await getMovieDetailOMDb(m.imdbID).catch(() => null)
-          if (detail) {
-            addMovie({
-              imdbId: detail.imdbID, title: detail.Title, year: detail.Year?.slice(0, 4) ?? '',
-              poster: getOMDbPoster(detail.Poster), genre: parseOMDbGenres(detail.Genre),
-              overview: detail.Plot !== 'N/A' ? detail.Plot : '',
-              tmdbRating: parseOMDbRating(detail.imdbRating),
-              userRating: 0, userNotes: '', status: 'watchlist',
-            })
-          } else {
-            addMovie({
-              imdbId: m.imdbID, title: m.Title, year: m.Year?.slice(0, 4) ?? '',
-              poster: getOMDbPoster(m.Poster), genre: [], overview: '',
-              tmdbRating: 0, userRating: 0, userNotes: '', status: 'watchlist',
-            })
-          }
+          if (!detail) continue
+          // Genre-level filter: skip if OMDb tags it as documentary or short
+          const genreLower = (detail.Genre ?? '').toLowerCase()
+          if (JUNK_GENRES.some((g) => genreLower.includes(g))) continue
+          addMovie({
+            imdbId: detail.imdbID, title: detail.Title, year: detail.Year?.slice(0, 4) ?? '',
+            poster: getOMDbPoster(detail.Poster), genre: parseOMDbGenres(detail.Genre),
+            overview: detail.Plot !== 'N/A' ? detail.Plot : '',
+            tmdbRating: parseOMDbRating(detail.imdbRating),
+            userRating: 0, userNotes: '', status: 'watchlist',
+          })
         }
       })
       .catch(() => { /* offline — user can add movies manually */ })
