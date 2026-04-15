@@ -1,0 +1,312 @@
+/**
+ * CineTrack Global Stylesheet
+ * Mobile-first design with Netflix/IMDb aesthetic
+ * Dark mode by default
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  --color-bg: #0f0f13;
+  --color-surface: #1a1a24;
+  --color-surface-2: #232335;
+  --color-border: #2a2a3d;
+  --color-accent: #e50914;
+  --color-accent-dim: rgba(229,9,20,0.15);
+  --color-accent-2: #f5c518;
+  --color-text: #ffffff;
+  --color-text-muted: #8888a0;
+  --color-success: #22d3a8;
+  --color-gold: #f5c518;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tailwind shortcuts for CSS variables */
+@layer utilities {
+  .bg-bg           { background-color: var(--color-bg); }
+  .bg-surface      { background-color: var(--color-surface); }
+  .bg-surface-2    { background-color: var(--color-surface-2); }
+  .border-border   { border-color: var(--color-border); }
+  .text-accent     { color: var(--color-accent); }
+  .text-muted      { color: var(--color-text-muted); }
+  .text-gold       { color: var(--color-gold); }
+  .fill-gold       { fill: var(--color-gold); }
+  .fill-accent     { fill: var(--color-accent); }
+}
+
+/* ===== BASE RESETS ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', 'Outfit', system-ui, sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 99px;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ===== GLASS MORPHISM ===== */
+.glass {
+  background: rgba(15, 15, 19, 0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ===== GRADIENT TEXT ===== */
+.gradient-text {
+  background: linear-gradient(135deg, #e50914 0%, #ff6b35 50%, #f5c518 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== CARD SHIMMER ===== */
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--color-surface) 25%,
+    var(--color-surface-2) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== STAR RATING ===== */
+.star {
+  transition: transform 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+}
+.star:hover {
+  transform: scale(1.25);
+}
+.star:active {
+  transform: scale(0.9);
+}
+
+/* ===== SWIPE CARD ===== */
+.swipe-card {
+  touch-action: pan-y;
+  user-select: none;
+  position: relative;
+  will-change: transform;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  background: linear-gradient(90deg, #e50914 0%, #ff6b35 50%, #f5c518 100%);
+  background-size: 200% 100%;
+  animation: progressGlow 3s ease infinite;
+  border-radius: 9999px;
+  height: 100%;
+  transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f5c518;
+  box-shadow: 0 0 6px #f5c518;
+  transform: translateX(50%);
+}
+
+@keyframes progressGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ===== BACKDROP ===== */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+}
+
+/* ===== INPUT FOCUS ===== */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.35);
+  border-color: rgba(229, 9, 20, 0.5) !important;
+}
+
+/* ===== SMOOTH SCROLL ===== */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ===== MOVIE CARD ===== */
+.movie-card {
+  transition: box-shadow 0.2s ease;
+}
+.movie-card:active {
+  scale: 0.98;
+}
+
+/* ===== PULSE ANIMATION ===== */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* ===== SLIDE UP ANIMATION ===== */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ===== FADE IN ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* ===== GENRE BADGE ===== */
+.genre-badge {
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid rgba(229, 9, 20, 0.25);
+  color: #ff6b6b;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+/* ===== NO POSTER PLACEHOLDER ===== */
+.poster-placeholder {
+  background: linear-gradient(135deg, #1a1a24 0%, #232335 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 8px;
+}
+
+/* Safe area padding for content */
+.pb-safe {
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+/* ===== SWIPE REVEAL COLORS ===== */
+.swipe-bg-delete {
+  background: linear-gradient(90deg, #e50914 0%, #7f0000 100%);
+}
+.swipe-bg-watch {
+  background: linear-gradient(270deg, #22d3a8 0%, #0d9488 100%);
+}
+
+/* ===== TOAST ===== */
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.toast {
+  animation: toastIn 0.3s ease forwards;
+}
+
+/* ===== PAGE TRANSITIONS ===== */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.25s ease;
+}
