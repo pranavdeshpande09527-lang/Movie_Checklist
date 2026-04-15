@@ -157,7 +157,10 @@ export default function MovieCard({ movie, onClick }: MovieCardProps) {
             {movie.poster && !imgError ? (
               <img src={movie.poster} alt={movie.title}
                 className="w-full h-full object-cover"
-                onError={() => setImgError(true)} loading="lazy" />
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+                onError={() => setImgError(true)}
+                loading="lazy" />
             ) : (
               <div className="poster-placeholder w-full h-full">
                 <Film size={20} className="text-muted" />

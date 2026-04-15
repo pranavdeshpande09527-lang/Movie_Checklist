@@ -84,7 +84,7 @@ function CinematicMode({ movieId, onClose }: { movieId: string; onClose: () => v
 
 /* ── Main Page ── */
 export default function HomePage() {
-  const { movies, addMovie } = useMovieStore()
+  const { movies, addMovie, removeMovie } = useMovieStore()
   const { activeMood, cinematicMovieId, setCinematicMovie, isBulkMode, toggleBulkMode } = useUIStore()
   const { streak } = useGamificationStore()
   const [selectedMovie, setSelectedMovie] = useState<import('../store/movieStore').Movie | null>(null)
@@ -97,6 +97,20 @@ export default function HomePage() {
     window.addEventListener('online', onOnline)
     window.addEventListener('offline', onOffline)
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline) }
+  }, [])
+
+  // Auto-clean any junk seed entries (shorts, compilations, award shows) from previous app versions
+  useEffect(() => {
+    const JUNK_PATTERNS = [
+      'short film', 'compilation', 'nominated', 'award ceremony',
+      'awards show', 'highlights', 'behind the scene', 'making of',
+      'concert', 'stage show', 'tribute', 'best of',
+    ]
+    movies.forEach((m) => {
+      const t = m.title.toLowerCase()
+      if (JUNK_PATTERNS.some((p) => t.includes(p))) removeMovie(m.id)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Seed library with live OMDb data on first launch

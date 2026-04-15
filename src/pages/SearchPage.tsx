@@ -347,7 +347,9 @@ function SearchResultCard({ result, isAdded, isAdding, onAdd }: CardProps) {
     <motion.div variants={item} className="flex gap-3 p-3 rounded-2xl border border-white/[0.06] bg-surface">
       <div className="flex-shrink-0 w-[60px] h-[90px] rounded-xl overflow-hidden bg-surface-2">
         {poster && !imgError ? (
-          <img src={poster} alt={result.Title} className="w-full h-full object-cover" onError={() => setImgError(true)} loading="lazy" />
+          <img src={poster} alt={result.Title} className="w-full h-full object-cover"
+            referrerPolicy="no-referrer" crossOrigin="anonymous"
+            onError={() => setImgError(true)} loading="lazy" />
         ) : (
           <div className="poster-placeholder w-full h-full"><Film size={18} className="text-muted" /></div>
         )}
