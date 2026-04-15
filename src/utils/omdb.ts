@@ -58,6 +58,25 @@ export async function discoverByQuery(query: string): Promise<OMDbSearchResult[]
   return searchMoviesOMDb(query, 1)
 }
 
+/**
+ * Filter OMDb results to real, watchable feature films.
+ * Removes short films, award shows, compilations, making-of docs, etc.
+ */
+export function isGoodMovie(m: OMDbSearchResult): boolean {
+  if (m.Type !== 'movie') return false
+  const t = m.Title.toLowerCase()
+  const JUNK_PATTERNS = [
+    'short film', 'short films', 'compilation', 'collection', 'anthology',
+    'nominated', 'award ceremony', 'awards show', 'highlights', 'ceremony',
+    'behind the scene', 'making of', 'making-of', 'documentary',
+    'the making', 'recap', 'extras', 'special edition', 'cut scenes',
+    'volume 1', 'volume 2', 'part 1:', 'part 2:', 'season',
+    'vii', 'viii', ':episode', 'episode ', 'live action performance',
+    'live performance', 'concert', 'stage show', 'ballet',
+    'anniversary', 'tribute', 'best of',
+  ]
+  return !JUNK_PATTERNS.some((p) => t.includes(p))
+}
 
 /**
  * Fetch detailed movie info by IMDb ID

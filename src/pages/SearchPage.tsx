@@ -10,6 +10,7 @@ import { Search, Plus, Loader2, X, Film, CheckCircle, Clock, TrendingUp, Sparkle
 import {
   searchMoviesOMDb,
   discoverByQuery,
+  isGoodMovie,
   getMovieDetailOMDb,
   getOMDbPoster,
   parseOMDbGenres,
@@ -58,16 +59,18 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     id: 'trending',
     label: 'Trending Worldwide',
     emoji: '🔥',
-    queries: ['action 2024', 'thriller 2024', 'drama 2024'],
+    // Reliable franchise/director terms — OMDb returns actual films, not shorts or compilations
+    queries: ['Oppenheimer', 'Dune', 'Avatar', 'Top Gun', 'John Wick'],
     chipClass: 'border-accent/20 hover:border-accent/50',
     iconColor: 'text-accent',
   },
   {
     id: 'indian',
     label: 'Indian Hits',
-    emoji: '🎬',
+    emoji: '🎦',
     subtitle: 'Bollywood & regional cinema',
-    queries: ['Bollywood 2023', 'Hindi movie', 'Indian drama'],
+    // Actor/director names — OMDb reliably returns their famous films
+    queries: ['Aamir Khan', 'Rajkumar Hirani', 'SS Rajamouli', 'Farhan Akhtar'],
     chipClass: 'border-orange-500/25 hover:border-orange-400/60',
     iconColor: 'text-orange-400',
   },
@@ -76,7 +79,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     label: 'Hidden Gems',
     emoji: '💎',
     subtitle: 'Critically loved, criminally underrated 🌍',
-    queries: ['cult classic thriller', 'independent film', 'underrated sci-fi'],
+    // Director names known for critically-loved niche films
+    queries: ['Denis Villeneuve', 'David Fincher', 'Darren Aronofsky'],
     chipClass: 'border-purple-500/25 hover:border-purple-400/60',
     iconColor: 'text-purple-400',
   },
@@ -85,7 +89,8 @@ const DISCOVERY_SECTIONS: SectionDef[] = [
     label: 'Indian Hidden Gems',
     emoji: '✨',
     subtitle: "Masterpieces most people haven't seen 🇮🇳",
-    queries: ['Hindi classic', 'Indian award', 'Bollywood hidden'],
+    // Directors of acclaimed Indian art cinema
+    queries: ['Anurag Kashyap', 'Vishal Bhardwaj', 'Dibakar Banerjee'],
     chipClass: 'border-amber-500/25 hover:border-amber-400/60',
     iconColor: 'text-amber-400',
   },
@@ -120,14 +125,14 @@ export default function SearchPage() {
       setSections((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
 
     DISCOVERY_SECTIONS.forEach((section) => {
-      // Run all queries in parallel, merge, deduplicate
       Promise.all(section.queries.map((q) => discoverByQuery(q).catch(() => [] as OMDbSearchResult[])))
         .then((allResults) => {
           const seen = new Set<string>()
           const merged: OMDbSearchResult[] = []
           for (const batch of allResults) {
             for (const m of batch) {
-              if (!seen.has(m.imdbID) && m.Type === 'movie') {
+              // Apply strict filter: real feature films only, no shorts/compilations/junk
+              if (!seen.has(m.imdbID) && isGoodMovie(m)) {
                 seen.add(m.imdbID)
                 merged.push(m)
               }

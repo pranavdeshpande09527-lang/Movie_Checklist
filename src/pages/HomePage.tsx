@@ -15,7 +15,7 @@ import AddMovieModal from '../components/AddMovieModal'
 import BulkActionBar from '../components/BulkActionBar'
 
 import { getDailyPick, getRecommendations, filterByMoodGenres } from '../utils/recommendations'
-import { discoverByQuery, getMovieDetailOMDb, getOMDbPoster, parseOMDbGenres, parseOMDbRating } from '../utils/omdb'
+import { discoverByQuery, isGoodMovie, getMovieDetailOMDb, getOMDbPoster, parseOMDbGenres, parseOMDbRating } from '../utils/omdb'
 
 
 /* ── Cinematic Mode Overlay ── */
@@ -99,15 +99,16 @@ export default function HomePage() {
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline) }
   }, [])
 
-  // Seed library with live OMDb data on first launch (no TMDB key needed)
+  // Seed library with live OMDb data on first launch
   useEffect(() => {
     if (movies.length !== 0) return
-    const SEED_QUERIES = ['action 2023', 'drama 2022', 'Bollywood 2023', 'thriller 2023']
+    // Director/franchise names reliably return real popular films (unlike genre+year queries)
+    const SEED_QUERIES = ['Christopher Nolan', 'Steven Spielberg', 'Aamir Khan', 'Rajkumar Hirani']
     Promise.all(SEED_QUERIES.map((q) => discoverByQuery(q).catch(() => [])))
       .then(async (batches) => {
         const seen = new Set<string>()
         const unique = batches.flat().filter((m) => {
-          if (seen.has(m.imdbID) || m.Type !== 'movie') return false
+          if (seen.has(m.imdbID) || !isGoodMovie(m)) return false
           seen.add(m.imdbID); return true
         }).slice(0, 12)
         for (const m of unique) {
