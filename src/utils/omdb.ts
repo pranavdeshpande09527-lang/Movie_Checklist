@@ -42,20 +42,22 @@ export interface OMDbMovieDetail {
  */
 export async function searchMoviesOMDb(query: string, page = 1): Promise<OMDbSearchResult[]> {
   if (!query.trim()) return []
-
   const url = `${OMDB_BASE}/?apikey=${API_KEY}&s=${encodeURIComponent(query)}&type=movie&page=${page}`
   const res = await fetch(url)
   if (!res.ok) throw new Error('OMDb network error')
-
   const data = await res.json()
-
-  if (data.Response === 'False') {
-    // "Movie not found!" is a normal response — just return empty
-    return []
-  }
-
+  if (data.Response === 'False') return []
   return (data.Search ?? []) as OMDbSearchResult[]
 }
+
+/**
+ * Discover movies by a dynamic category keyword.
+ * Used to power discovery sections (trending, Indian, hidden gems) dynamically via OMDb.
+ */
+export async function discoverByQuery(query: string): Promise<OMDbSearchResult[]> {
+  return searchMoviesOMDb(query, 1)
+}
+
 
 /**
  * Fetch detailed movie info by IMDb ID

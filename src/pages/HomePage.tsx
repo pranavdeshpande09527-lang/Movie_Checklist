@@ -15,7 +15,7 @@ import AddMovieModal from '../components/AddMovieModal'
 import BulkActionBar from '../components/BulkActionBar'
 
 import { getDailyPick, getRecommendations, filterByMoodGenres } from '../utils/recommendations'
-import { getTrending, formatTMDBMovie } from '../utils/tmdb'
+import { discoverByQuery, getMovieDetailOMDb, getOMDbPoster, parseOMDbGenres, parseOMDbRating } from '../utils/omdb'
 
 
 /* ── Cinematic Mode Overlay ── */
@@ -99,15 +99,37 @@ export default function HomePage() {
     return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline) }
   }, [])
 
-  // Seed library with live TMDB trending if it's the user's first launch
+  // Seed library with live OMDb data on first launch (no TMDB key needed)
   useEffect(() => {
-    if (movies.length === 0) {
-      getTrending('week')
-        .then((list) => {
-          list.slice(0, 12).forEach((m) => addMovie(formatTMDBMovie(m)))
-        })
-        .catch(() => { /* offline — user can add movies manually */ })
-    }
+    if (movies.length !== 0) return
+    const SEED_QUERIES = ['action 2023', 'drama 2022', 'Bollywood 2023', 'thriller 2023']
+    Promise.all(SEED_QUERIES.map((q) => discoverByQuery(q).catch(() => [])))
+      .then(async (batches) => {
+        const seen = new Set<string>()
+        const unique = batches.flat().filter((m) => {
+          if (seen.has(m.imdbID) || m.Type !== 'movie') return false
+          seen.add(m.imdbID); return true
+        }).slice(0, 12)
+        for (const m of unique) {
+          const detail = await getMovieDetailOMDb(m.imdbID).catch(() => null)
+          if (detail) {
+            addMovie({
+              imdbId: detail.imdbID, title: detail.Title, year: detail.Year?.slice(0, 4) ?? '',
+              poster: getOMDbPoster(detail.Poster), genre: parseOMDbGenres(detail.Genre),
+              overview: detail.Plot !== 'N/A' ? detail.Plot : '',
+              tmdbRating: parseOMDbRating(detail.imdbRating),
+              userRating: 0, userNotes: '', status: 'watchlist',
+            })
+          } else {
+            addMovie({
+              imdbId: m.imdbID, title: m.Title, year: m.Year?.slice(0, 4) ?? '',
+              poster: getOMDbPoster(m.Poster), genre: [], overview: '',
+              tmdbRating: 0, userRating: 0, userNotes: '', status: 'watchlist',
+            })
+          }
+        }
+      })
+      .catch(() => { /* offline — user can add movies manually */ })
   }, [])
 
   // Smart Daily Pick
